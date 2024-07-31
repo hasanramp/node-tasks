@@ -1,14 +1,13 @@
 const express = require('express');
 const app = express();
-const mongoose = require('mongoose');
 const bodyParser = require('body-parser')
+const mongoose = require('mongoose');
 const Student = require("./models/student")
 
 const dbURI = "mongodb+srv://node_project_user:Newtomongodb!@cluster0.fszmfbt.mongodb.net/hogwarts_characters?retryWrites=true&w=majority&appName=Cluster0"
 mongoose.connect(dbURI)
     .then((result) => app.listen(8000))
     .catch((err) => console.log(err))
-
 
 app.use(bodyParser.urlencoded({ extended: true }))
 app.set('view engine', 'ejs');
@@ -17,7 +16,7 @@ app.get('/', (req, res) => {
     res.render("index")
 })
 
-app.post('/', (req, res) => {
+app.post('/', async (req, res) => {
     const student = new Student({
         id: req.body.characterId,
         name : req.body.characterName,
@@ -27,38 +26,37 @@ app.post('/', (req, res) => {
 
     })
     let idAlreadyExists = true;
-    Student.find()
-        .then((findResult) => {
-            for (let i = 0; i < findResult.length; i++) {
-            if (findResult[i].id == student.id) {
-                res.send("Character with this id already exists.");
-                }
+    // Student.find()
+
+    try {
+        const findResult = await Student.find();
+        for (let i = 0; i < findResult.length; i++) {
+        if (findResult[i].id == student.id) {
+            res.send("Character with this id already exists.");
             }
-            idAlreadyExists = false;
-            student.save()
-                .then((result) => {
-                    res.send(result)
-                })
-                .catch((err) => {
-                    res.send(err)
-                })
-        })
-        .catch((err) => {
-            res.send(err)
-        });
+        }
+        idAlreadyExists = false;
+
+    }catch (e) {
+        console.log(e);
+    }
     
-    // if (!idAlreadyExists) {
-    //     student.save()
-    //         .then((result) => {
-    //             res.send(result)
-    //         })
-    //         .catch((err) => {
-    //             res.send(err)
-    //         })
-    // }else {
-    //     console.log('reacccched here')
-    //     console.log(idAlreadyExists)
-    // }
+
+    
+    if (!idAlreadyExists) {
+        console.log('reached here')
+        student.save()
+            .then((result) => {
+                res.send(result)
+            })
+            .catch((err) => {
+
+                console.log(err)
+            })
+    }
+    else {
+        console.log(idAlreadyExists);
+    }
 })
 
 app.get('/view-all', (req, res) => {
@@ -69,3 +67,15 @@ app.get('/view-all', (req, res) => {
             res.render('view-all', {result: result})
         })
 })
+
+app.get('/delete', (req, res) => {
+    res.render('delete')
+})
+
+app.post('/delete', (req, res) => {
+    Student.deleteOne({id: req.body.characterId})
+        .then((result) => {
+            res.send(result);
+        })
+
+}) 
