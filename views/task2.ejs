@@ -18,7 +18,14 @@
    <p style="display: none;" id="data"><%= data %></p>
    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
    <script>
+        /*
+            The Harry Potter data received from the server is in an invisible <p> tag.
+            hpData gets the data and JSON.parse converts it into an object which is {data: array[]}
+            the array has names of all the characters and spells
+        */
         let hpData = JSON.parse(document.getElementById("data").innerHTML) 
+
+        // Returns the names which are superstrings of the input given by the user
         function lookForSubstring(toSearchFrom, toSearch) {
             let result = []
             for (let i = 0; i < toSearchFrom.length; i++) {
@@ -29,6 +36,7 @@
             return result;
         }
 
+        // Doesn't work
         function lookForCharacterMatches(toSearchFrom, toSearch) {
             let advRes = new Map()
             for (let i = 0; i < toSearchFrom.length; i++) {
@@ -51,18 +59,19 @@
         
         
       
-        const url = "https://hp-api.onrender.com/api/characters";
-        async function getData() {
-            let response = await axios.get(url)
-            return response.data;
-        }
+        // Gets user input
         let input = document.getElementById("input")
+        // The event listener is activated everytime the input value is changed and the function updateValue() is called
         input.addEventListener("input", updateValue)
+
         let names = []
         names = hpData.data
+
         function updateValue(e) {
+            // e.target.value is the string entered by the user. It is converted to lowercase using toLowerCase()
             let value = e.target.value.toLowerCase();
 
+            // Looks for which Characters/spells match the input and updates the dropdown
             let res = lookForSubstring(names, value)
             if (res.length !== 0) {
                 for (let j = 0; j < 3; j++) {
@@ -70,11 +79,9 @@
                     option.innerHTML = res[j]
                 }
             }else {
+                // Doesn't work
                 console.log('reached here')
                 res = lookForCharacterMatches(names, value)
-                // for (let i = 0; i < res.length; i++) {
-                //     console.log(res.entries()[i])
-                // }
                 let highest = 0
                 let character;
                 for (let [key, value] of res) {
